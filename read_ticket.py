@@ -1,5 +1,6 @@
 import easyocr
 import re
+import pandas as pd
 
 # import cv2
 # import os
@@ -22,7 +23,7 @@ import re
 
 def extract_flight_info(image_path):
     # initialize an OCR engine (jpn & en)
-    reader = easyocr.Reader(['en', 'ja'])
+    reader = easyocr.Reader(['en'])
     
     # read texts from an image
     results = reader.readtext(image_path, detail=0)
@@ -31,12 +32,25 @@ def extract_flight_info(image_path):
     print(f"--- Text ---\n{full_text}\n------------------")
 
     # Read an airport code
-    airport_codes = re.findall(r'\b[A-Z]{3}\b', full_text)
+    airport_codes = re.findall(r'\b([A-Z]{3})\s+([A-Z]{3})\b', full_text)
+
     
     # remove duplicate
-    unique_codes = list(set(airport_codes))
-    return unique_codes
+    u_codes = list(set(airport_codes))
+    # print("airport codes: ", u_codes)
+    return u_codes
 
 # test
 codes = extract_flight_info('ticket_test.png')
-print(f"airport codes: {codes}")
+
+iata = pd.read_csv("airports_iata.csv")
+
+# Get IATA code for departure and arrival airport
+dep_code = codes[0][0]
+dest_code = codes[0][1]
+
+# Get info about depature and arrival airport
+dep_row = iata[iata["iata_code"] == dep_code]
+dest_row = iata[iata["iata_code"] == dest_code]
+
+print(f'The flight departed at {dep_row["name"].item()} and arrived at {dest_row["name"].item()}!')
