@@ -46,9 +46,11 @@ def get_airport_info(code):
     if r.empty:
         return { "iata_code" : code, "name" : "Unknown", "latitude" : None, "longitude" : None }
 
+    r = r.iloc[0]
+
     return {
         "iata_code" : code,
-        "name" : r["name"],
-        "latitude" : r["latitude_deg"],
-        "longitude" : r["longitude_deg"]
+        "name" : str(r["name"]),
+        "latitude" : float(r["latitude_deg"]),
+        "longitude" : float(r["longitude_deg"])
     }
