@@ -3,8 +3,28 @@
 <head>
     <meta charset="UTF-8" />
     <title>SkyGraph</title>
+
+    <!-- Style and JavaScript for Leaflet * still needs to be displayed * -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 </head>
 <body>
+    <!-- 1. Get a space to draw a map -->
+    <div id="map" style="width: 100%; height:100vh;"></div>
+
+    <script>
+        // 2. Initialize a map with JS by targetting the div created on step 1 - L.map: draw a map
+        const map = L.map('map', {
+            center: [20,0], // Set the centre of the map
+            zoom: 2 // 1 - 18? 
+        });
+
+        // 3. load tile images and put them in the map - .tilelayrer: loading tiles
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap &copy; CARTO', // Get a map image from the server of CartoDB
+        }).addTo(map)
+    </script>
 
 </body>
 </html>
