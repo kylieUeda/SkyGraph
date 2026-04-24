@@ -19,7 +19,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 def save_to_csv(dep_info, dest_info):
     file_exists = os.path.isfile(DATA_FILE)
-    with open(DATA_FILE, "a", newline="", encoding="utf-8") as f
+    with open(DATA_FILE, "a", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         # if file is new write a header
         if not file_exists:
