@@ -15,6 +15,7 @@
         height: 100px;
         width: 100%;
         position: fixed;
+        z-index: 1000;
         top: 0;
         display: flex;
         padding: 0 5%;
@@ -28,7 +29,7 @@
 
         <span>SKYGRAPH</span>
 
-        <label style="
+        <label id='addFlightBtn' style="
             font-size: 1rem;
             cursor: pointer;
             color: white;
@@ -36,21 +37,47 @@
             padding-right: 10%;
         ">
             + Add New Flight
-            <input
+        </label>
+        <input
                 type="file"
                 id="fileInput"
                 accept="image/*"
                 style="display: none;"
             />
-        </label>
     </header>
 
     <!-- Get a space to draw a map -->
     <div id="map" style="width: 100%; height:calc(100vh - 48px); top: 100px;"></div>
 
+    <!--
+    z-index: layer (usually 400, but 1000 this time to bring it to the front)
+    align-items: vertical
+    justify-content: horizontal
+    -->
+    <div id="uploadModal" style="
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        align-items: center;
+        justify-content: center;">
+
+        <div style="background: white; padding: 20px; border-radius: 8px; text-align: center; color: #333;">
+            <h3>Select Input Method</h3>
+            <button onclick="document.getElementById('fileInput').click(); closeModal();">Upload Image</button>
+            <button onclick="openManualInput();">Manual Entry</button>
+            <button onclick="closeModal();">Cancel</button>
+        </div>
+    </div>
+
     <script>
-        console.log('script loaded!');
-        console.log('fileInput:', document.getElementById('fileInput'));
+        // // test
+        // console.log('script loaded!');
+        // console.log('fileInput:', document.getElementById('fileInput'));
 
         //////////////////////// MAP ////////////////////////
         // Initialize a map with JS by targetting the div created on step 1 - L.map: draw a map
@@ -74,11 +101,12 @@
         const fileInput = document.getElementById('fileInput');
 
         // test
-        console.log('adding event listener...');
+        // console.log('adding event listener...');
 
         // Event occuring when the file is chosen
         fileInput.addEventListener('change', async (e) => {
             e.preventDefault(); // prevent the page reloading after uploading
+
             // get a file selected
             const file = e.target.files[0];
             if (!file) return; // when cancelled
@@ -96,17 +124,21 @@
             // Get the response as JSON
             const data = await response.json();
 
-            // test
-            console.log(data);
+            // // test
+            // console.log(data);
 
         //////////////////// Draw flights ////////////////////
             const dep = data.departure;
             const dest = data.destination;
 
-            // Mark the departure point
+            // var myIcon = L.icon({ iconSize: [38, 95], // Width and Height in pixels
+                                    });
+
+            // Mark departure point
+            // L.marker([dep.latitude, dep.longitude], { iconSize: [10, 10]}).addTo(map)
             L.marker([dep.latitude, dep.longitude]).addTo(map)
 
-            // Mark the destination point
+            // Mark destination point
             L.marker([dest.latitude, dest.longitude]).addTo(map)
 
             // draw the line inbetween
@@ -117,8 +149,30 @@
                 color : "#D6C8C3",
                 weight: 2
             }).addTo(map);
-        })
-    </script>
 
+        const modal = document.getElementById('uploadModal');
+        const addFlightBtn = document.getElementById('addFlightBtn');
+
+        function openModal() {
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        if (addFlightBtn) {
+            addFlightBtn.onclick = openModal;
+            // addFlightBtn.onclick = openModal(); -> modal shows up when refresh the page
+        }
+
+        // for manual input
+        function openManualInput() {
+            alert("Manual input form will be here!"); // check if it works
+            closeModal();
+        }
+
+    </script>
+    
 </body>
 </html>

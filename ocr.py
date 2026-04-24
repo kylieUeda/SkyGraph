@@ -1,6 +1,9 @@
 import easyocr
 import re
 import pandas as pd
+import csv
+import os
+from datetime import datetime
 
 iata_df = pd.read_csv("airports_iata.csv")
 IATA = set(iata_df["iata_code"].dropna().str.upper())
