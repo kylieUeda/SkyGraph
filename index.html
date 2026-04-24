@@ -11,39 +11,57 @@
 </head>
 <body>
     <!-- Header -->
-    <header style="height: 48px; display: flex; padding: 5%; background: #02636D; font-size: calc(1rem + 5vw); color: #ffffff; font-family: Optima;">
+    <header style="
+        height: 100px;
+        width: 100%;
+        position: fixed;
+        top: 0;
+        display: flex;
+        padding: 0 5%;
+        justify-content: space-between;
+        background: #02636D;
+        font-size: clamp(2rem, 5vw, 5rem);
+        color: #ffffff;
+        font-family: Optima;
+        text-align: justify;
+        align-items: center;">
+
         <span>SKYGRAPH</span>
 
-        <div style="position: relative;">
-            <!--
-                type="file" : Open the dialog for the file selection
-                accept="image/*" : Only image files can be selected
-            -->
+        <label style="
+            font-size: 1rem;
+            cursor: pointer;
+            color: white;
+            text-decoration: underline;
+            padding-right: 10%;
+        ">
+            + Add New Flight
             <input
                 type="file"
-                id="fileInput" 
+                id="fileInput"
                 accept="image/*"
-                style="position: absolute; inset: 0; opacity: 0; cursor: pointer;"
+                style="display: none;"
             />
-
-            <label for="fileInput" style="
-                font-size: 0.75rem;
-                cursor: pointer;
-            ">
-            Upload Boarding Pass
-            </label>
-        </div>
+        </label>
     </header>
 
     <!-- Get a space to draw a map -->
-    <div id="map" style="width: 100%; height:calc(100vh - 48px);"></div>
+    <div id="map" style="width: 100%; height:calc(100vh - 48px); top: 100px;"></div>
 
     <script>
+        console.log('script loaded!');
+        console.log('fileInput:', document.getElementById('fileInput'));
+
         //////////////////////// MAP ////////////////////////
         // Initialize a map with JS by targetting the div created on step 1 - L.map: draw a map
         const map = L.map('map', {
-            center: [20,0], // Set the centre of the map
-            zoom: 2 // 1 - 18?
+            center: [0,0], // Set the centre of the map
+            zoom: 2, // 1 - 18?
+            minZoom: 2,
+            maxZom: 10,
+            maxBounds: [[-90, -180], [90, 180]],
+            maxBoundsViscosity: 1.0,
+            worldCopyJump: false // unable to duplicate the map
         });
 
         // load tile images and put them in the map - .tilelayer: loading tiles
@@ -55,8 +73,12 @@
         // Get fileInput
         const fileInput = document.getElementById('fileInput');
 
+        // test
+        console.log('adding event listener...');
+
         // Event occuring when the file is chosen
         fileInput.addEventListener('change', async (e) => {
+            e.preventDefault(); // prevent the page reloading after uploading
             // get a file selected
             const file = e.target.files[0];
             if (!file) return; // when cancelled
@@ -82,18 +104,18 @@
             const dest = data.destination;
 
             // Mark the departure point
-            L.marker([dep.lat, dep.lon]).addTo(map)
+            L.marker([dep.latitude, dep.longitude]).addTo(map)
 
             // Mark the destination point
-            L.marker([dest.lat, dest.lon]).addTo(map)
+            L.marker([dest.latitude, dest.longitude]).addTo(map)
 
             // draw the line inbetween
             L.polyline([
-                [dep.lat, dep.lon],
-                [dest.lat, dest.lon]
+                [dep.latitude, dep.longitude],
+                [dest.latitude, dest.longitude]
             ], {
                 color : "#D6C8C3",
-                weight : 5,
+                weight: 2
             }).addTo(map);
         })
     </script>
