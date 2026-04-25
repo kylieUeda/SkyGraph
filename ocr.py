@@ -1,9 +1,7 @@
 import easyocr
 import re
 import pandas as pd
-import csv
-import os
-from datetime import datetime
+
 
 iata_df = pd.read_csv("airports_iata.csv")
 IATA = set(iata_df["iata_code"].dropna().str.upper())
@@ -24,6 +22,7 @@ def extract_flight_info(image_path):
 
     # Read an airport code
     codes_set = re.findall(r'\b([A-Z]{3})\s+([A-Z]{3})\b', full_text)
+    # date = re.findall(r'\b([0-9]{2})([A-Z]{3})\b', full_text)
 
     valid_sets = [
         (dep, dest)
