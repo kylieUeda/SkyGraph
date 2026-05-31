@@ -1,6 +1,5 @@
-fastapi 0.128.8
-uvicorn 0.39.0
-easyocr 1.7.2
+fastapi==0.128.8
+uvicorn==0.39.0
+easyocr==1.7.2
 pandas
 python-multipart
-datetime 5.5
