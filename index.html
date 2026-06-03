@@ -2,178 +2,332 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>SkyGraph</title>
-
-    <!-- Style and JavaScript for Leaflet * still needs to be displayed * -->
+    <title>✈️ FlightTracker 🌏</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
+        body {
+            font-family: Optima, 'Segoe UI', sans-serif;
+            background: #f4f4f2;
+        }
+
+        #ft-header {
+            height: 64px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            background: #02636D;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+        }
+
+        #ft-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #fff;
+            font-size: 22px;
+            font-weight: 500;
+            letter-spacing: -0.3px;
+        }
+
+        #ft-brand i { font-size: 22px; opacity: 0.9; }
+
+        #ft-add-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 7px 14px;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-family: Optima, 'Segoe UI', sans-serif;
+        }
+
+        #ft-add-btn:hover { background: rgba(255,255,255,0.25); }
+        #ft-add-btn i { font-size: 16px; }
+
+        #map {
+            width: 100%;
+            height: calc(100vh - 64px);
+            margin-top: 64px;
+        }
+
+        /* Modal overlay */
+        #uploadModal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            align-items: center;
+            justify-content: center;
+        }
+
+        #uploadModal.open { display: flex; }
+
+        #modal-box {
+            background: #fff;
+            border-radius: 14px;
+            padding: 28px 24px 24px;
+            width: 300px;
+            border: 0.5px solid #e0e0e0;
+        }
+
+        #modal-box h3 {
+            font-size: 16px;
+            font-weight: 500;
+            color: #111;
+            margin-bottom: 6px;
+            font-family: Optima, 'Segoe UI', sans-serif;
+        }
+
+        #modal-box p {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .ft-opt-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 14px;
+            margin-bottom: 8px;
+            border-radius: 9px;
+            border: 0.5px solid #ccc;
+            background: #f7f7f7;
+            cursor: pointer;
+            font-size: 14px;
+            color: #111;
+            font-family: Optima, 'Segoe UI', sans-serif;
+            transition: background 0.12s;
+        }
+
+        .ft-opt-btn:hover { background: #efefef; }
+        .ft-opt-btn i { font-size: 18px; color: #02636D; }
+
+        .ft-cancel-btn {
+            width: 100%;
+            padding: 9px;
+            border: none;
+            background: transparent;
+            color: #888;
+            font-size: 13px;
+            cursor: pointer;
+            margin-top: 4px;
+            border-radius: 8px;
+            font-family: Optima, 'Segoe UI', sans-serif;
+            transition: color 0.12s;
+        }
+
+        .ft-cancel-btn:hover { color: #111; }
+
+        /* Flight counter */
+        #ft-flight-count {
+            position: fixed;
+            bottom: 20px;
+            right: 16px;
+            background: #fff;
+            border: 0.5px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-size: 13px;
+            color: #666;
+            z-index: 500;
+            pointer-events: none;
+            font-family: Optima, 'Segoe UI', sans-serif;
+        }
+
+        #ft-flight-count span {
+            font-weight: 500;
+            color: #02636D;
+            font-size: 15px;
+        }
+
+        /* Toast */
+        #ft-toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #02636D;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 99px;
+            font-size: 13px;
+            font-weight: 500;
+            z-index: 9000;
+            opacity: 0;
+            transition: transform 0.3s, opacity 0.3s;
+            pointer-events: none;
+            font-family: Optima, 'Segoe UI', sans-serif;
+        }
+
+        #ft-toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    </style>
 </head>
 <body>
+
     <!-- Header -->
-    <header style="
-        height: 100px;
-        width: 100%;
-        position: fixed;
-        z-index: 1000;
-        top: 0;
-        display: flex;
-        padding: 0 5%;
-        justify-content: space-between;
-        background: #02636D;
-        font-size: clamp(2rem, 5vw, 5rem);
-        color: #ffffff;
-        font-family: Optima;
-        text-align: justify;
-        align-items: center;">
-
-        <span>TravelTracker</span>
-
-        <label id='addFlightBtn' style="
-            font-size: 1rem;
-            cursor: pointer;
-            color: white;
-            text-decoration: underline;
-            padding-right: 10%;
-        ">
-            + Add New Flight
-        </label>
-        <input
-                type="file"
-                id="fileInput"
-                accept="image/*"
-                style="display: none;"
-            />
+    <header id="ft-header">
+        <div id="ft-brand">
+            <i class="ti ti-plane" aria-hidden="true"></i>
+            FlightTracker
+        </div>
+        <button id="ft-add-btn">
+            <i class="ti ti-plus" aria-hidden="true"></i>
+            Add flight
+        </button>
     </header>
 
-    <!-- Get a space to draw a map -->
-    <div id="map" style="width: 100%; height:calc(100vh - 48px); top: 100px;"></div>
+    <!-- Map -->
+    <div id="map"></div>
 
-    <!--
-    z-index: layer (usually 400, but 1000 this time to bring it to the front)
-    align-items: vertical
-    justify-content: horizontal
-    -->
-    <div id="uploadModal" style="
-        display: none;
-        position: fixed;
-        z-index: 9999;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.5);
-        align-items: center;
-        justify-content: center;">
+    <!-- Flight counter -->
+    <div id="ft-flight-count"><span id="fc-num">0</span> flights tracked</div>
 
-        <div style="background: white; padding: 20px; border-radius: 8px; text-align: center; color: #333;">
-            <h3>Select Input Method</h3>
-            <button onclick="document.getElementById('fileInput').click(); closeModal();">Upload Image</button>
-            <button onclick="openManualInput();">Manual Entry</button>
-            <button onclick="closeModal();">Cancel</button>
+    <!-- Modal -->
+    <div id="uploadModal">
+        <div id="modal-box">
+            <h3>Add a new flight</h3>
+            <p>How would you like to add your flight details?</p>
+            <button class="ft-opt-btn" id="ft-upload-opt">
+                <i class="ti ti-upload" aria-hidden="true"></i>
+                Upload boarding pass
+            </button>
+            <button class="ft-opt-btn" id="ft-manual-opt">
+                <i class="ti ti-edit" aria-hidden="true"></i>
+                Enter manually
+            </button>
+            <button class="ft-cancel-btn" id="ft-cancel-btn">Cancel</button>
         </div>
     </div>
 
-    <script>
-        // // test
-        // console.log('script loaded!');
-        // console.log('fileInput:', document.getElementById('fileInput'));
+    <!-- Hidden file input -->
+    <input type="file" id="fileInput" accept="image/*" style="display: none;" />
 
+    <!-- Toast -->
+    <div id="ft-toast"></div>
+
+    <script>
         //////////////////////// MAP ////////////////////////
-        // Initialize a map with JS by targetting the div created on step 1 - L.map: draw a map
         const map = L.map('map', {
-            center: [0,0], // Set the centre of the map
-            zoom: 2, // 1 - 18?
+            center: [20, 10],
+            zoom: 2,
             minZoom: 2,
-            maxZom: 10,
             maxBounds: [[-90, -180], [90, 180]],
             maxBoundsViscosity: 1.0,
-            worldCopyJump: false // unable to duplicate the map
+            worldCopyJump: false,
+            zoomControl: false
         });
 
-        // load tile images and put them in the map - .tilelayer: loading tiles
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OpenStreetMap &copy; CARTO', // Get a map image from the server of CartoDB
-        }).addTo(map)
+            attribution: '&copy; OpenStreetMap &copy; CARTO'
+        }).addTo(map);
 
-        //////////////////////// CONNECT TO API ////////////////////////
-        // Get fileInput
-        const fileInput = document.getElementById('fileInput');
+        L.control.zoom({ position: 'topright' }).addTo(map);
 
-        // test
-        // console.log('adding event listener...');
+        //////////////////////// MARKERS & FLIGHTS ////////////////////////
+        let flightCount = 0;
 
-        // Event occuring when the file is chosen
-        fileInput.addEventListener('change', async (e) => {
-            e.preventDefault(); // prevent the page reloading after uploading
+        const dotIcon = L.divIcon({
+            className: '',
+            html: '<div style="width:10px;height:10px;border-radius:50%;background:#02636D;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3);"></div>',
+            iconSize: [10, 10],
+            iconAnchor: [5, 5]
+        });
 
-            // get a file selected
-            const file = e.target.files[0];
-            if (!file) return; // when cancelled
+        function addFlight(dep, dest) {
+            L.marker([dep.latitude, dep.longitude], { icon: dotIcon })
+                .addTo(map)
+                .bindPopup('<b>' + (dep.name || 'Departure') + '</b>');
 
-            // FormData -> a placeholder to send the file with the HTTP request
-            const formData = new FormData();
-            formData.append('file', file);
+            L.marker([dest.latitude, dest.longitude], { icon: dotIcon })
+                .addTo(map)
+                .bindPopup('<b>' + (dest.name || 'Destination') + '</b>');
 
-            // send a POST request to FastAPI
-            const response = await fetch("http://localhost:8000/extract", { // await = wait for response
-                method: "POST",
-                body: formData,
-            })
-
-            // Get the response as JSON
-            const data = await response.json();
-
-            // // test
-            // console.log(data);
-
-        //////////////////// Draw flights ////////////////////
-            const dep = data.departure;
-            const dest = data.destination;
-
-            // var myIcon = L.icon({ iconSize: [38, 95], // Width and Height in pixels
-
-            // Mark departure point
-            // L.marker([dep.latitude, dep.longitude], { iconSize: [10, 10]}).addTo(map)
-            L.marker([dep.latitude, dep.longitude]).addTo(map)
-
-            // Mark destination point
-            L.marker([dest.latitude, dest.longitude]).addTo(map)
-
-            // draw the line inbetween
             L.polyline([
                 [dep.latitude, dep.longitude],
                 [dest.latitude, dest.longitude]
             ], {
-                color : "#D6C8C3",
-                weight: 2
+                color: '#02636D',
+                weight: 1.5,
+                opacity: 0.65,
+                dashArray: '5, 6'
             }).addTo(map);
 
-        });
+            flightCount++;
+            document.getElementById('fc-num').textContent = flightCount;
+        }
 
+        //////////////////////// MODAL ////////////////////////
         const modal = document.getElementById('uploadModal');
-        const addFlightBtn = document.getElementById('addFlightBtn');
 
-        function openModal() {
-            modal.style.display = 'flex';
-        }
+        function openModal() { modal.classList.add('open'); }
+        function closeModal() { modal.classList.remove('open'); }
 
-        function closeModal() {
-            modal.style.display = 'none';
-        }
+        document.getElementById('ft-add-btn').onclick = openModal;
+        document.getElementById('ft-cancel-btn').onclick = closeModal;
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
-        if (addFlightBtn) {
-            addFlightBtn.onclick = openModal;
-            // addFlightBtn.onclick = openModal(); -> modal shows up when refresh the page
-        }
-
-        // for manual input
-        function openManualInput() {
-            alert("Manual input form will be here!"); // check if it works
+        document.getElementById('ft-upload-opt').onclick = function () {
+            document.getElementById('fileInput').click();
             closeModal();
+        };
+
+        document.getElementById('ft-manual-opt').onclick = function () {
+            showToast('Manual entry coming soon!');
+            closeModal();
+        };
+
+        //////////////////////// TOAST ////////////////////////
+        function showToast(msg) {
+            const t = document.getElementById('ft-toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2800);
         }
 
+        //////////////////////// FILE UPLOAD ////////////////////////
+        document.getElementById('fileInput').addEventListener('change', async (e) => {
+            e.preventDefault();
+            const file = e.target.files[0];
+            if (!file) return;
+
+            showToast('Processing boarding pass...');
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('http://localhost:8000/extract', {
+                    method: 'POST',
+                    body: formData,
+                });
+                const data = await response.json();
+                addFlight(data.departure, data.destination);
+                showToast('Flight added!');
+            } catch (err) {
+                showToast('Could not connect to server.');
+            }
+        });
     </script>
-    
+
 </body>
 </html>

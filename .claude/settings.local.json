@@ -1,7 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Bash(.venv/bin/pip freeze *)"
+      "Bash(.venv/bin/pip freeze *)",
+      "Bash(pip show *)",
+      "Bash(python -m uvicorn main:app --port 8000)",
+      "Bash(echo \"Server PID: $!\")",
+      "Bash(curl -s http://localhost:8000/health)",
+      "Bash(pip install *)",
+      "Bash(python3 -m playwright install chromium)",
+      "Bash(osascript *)",
+      "Bash(screencapture -x /tmp/flighttracker_screen.png)"
     ]
   }
 }
